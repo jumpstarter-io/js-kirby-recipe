@@ -1,0 +1,40 @@
+
+# set package name
+name kirby
+
+# install nginx, php and nodejs
+package nginx php5 nodejs
+
+# install our nginx.conf file
+install nginx.conf /app/code/nginx/nginx.conf
+
+# setup the js init system and install the daemons conf
+gd https://github.com/jumpstarter-io/js-init.git /app/code/js-init
+run ln -s /app/code/js-init/init.js /app/code/init
+install daemons.json /app/code/daemons.json
+
+# install the php env integrations
+gd https://github.com/jumpstarter-io/js-php-env.git /app/code/js-php-env
+
+# fetch kirby and install it to /app/code/src
+run wget http://download.getkirby.com/files/kirby-2.0.6.zip
+run unzip -d /app/code/ kirby-2.0.6.zip
+run mkdir /app/code/src
+run mv /app/code/kirby-2.0.6/* /app/code/src/
+
+# install our modified config.php
+install config.php /app/code/src/site/config/config.php
+
+# create an init state that we can use on first boot
+run mkdir /app/code/js-init-state
+run mv /app/code/src/{content,thumbs,site,assets} /app/code/js-init-state/
+
+# set up symlinks in /app/code/src to the writeable areas of the app
+run ln -s /app/state/kirby/content /app/code/src/content
+run ln -s /app/state/kirby/thumbs /app/code/src/thumbs
+run ln -s /app/state/kirby/site /app/code/src/site
+run ln -s /app/state/kirby/assets /app/code/src/assets
+
+# install the kirby init script that copies /app/code/js-init-state/* to /app/state/kirby/ on first boot
+install kirby_init.sh /app/code/kirby_init.sh
+run chmod +x /app/code/kirby_init.sh
